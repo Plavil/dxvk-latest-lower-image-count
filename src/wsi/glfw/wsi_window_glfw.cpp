@@ -124,6 +124,18 @@ namespace dxvk::wsi {
     return window != nullptr;
   }
 
+
+  bool isMinimized(HWND hWindow) {
+    GLFWwindow* window = fromHwnd(hWindow);
+    return glfwGetWindowAttrib(window, GLFW_ICONIFIED) != 0;
+  }
+
+
+  bool isOccluded(HWND hWindow) {
+    return false;
+  }
+
+
   void updateFullscreenWindow(
       HMONITOR hMonitor,
       HWND     hWindow,

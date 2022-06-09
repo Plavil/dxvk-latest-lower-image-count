@@ -4,6 +4,8 @@
 
 #include "../util/util_misc.h"
 
+#include <d3d12.h>
+
 namespace dxvk {
   
   DxgiSwapChain::DxgiSwapChain(
@@ -11,14 +13,17 @@ namespace dxvk {
           IDXGIVkSwapChain*           pPresenter,
           HWND                        hWnd,
     const DXGI_SWAP_CHAIN_DESC1*      pDesc,
-    const DXGI_SWAP_CHAIN_FULLSCREEN_DESC*  pFullscreenDesc)
+    const DXGI_SWAP_CHAIN_FULLSCREEN_DESC*  pFullscreenDesc,
+          IUnknown*                   pDevice)
   : m_factory   (pFactory),
     m_window    (hWnd),
     m_desc      (*pDesc),
     m_descFs    (*pFullscreenDesc),
     m_presentCount(0u),
     m_presenter (pPresenter),
-    m_monitor   (wsi::getWindowMonitor(m_window)) {
+    m_monitor   (wsi::getWindowMonitor(m_window)),
+    m_is_d3d12(SUCCEEDED(pDevice->QueryInterface(__uuidof(ID3D12CommandQueue), reinterpret_cast<void**>(&Com<ID3D12CommandQueue>())))) {
+
     if (FAILED(m_presenter->GetAdapter(__uuidof(IDXGIAdapter), reinterpret_cast<void**>(&m_adapter))))
       throw DxvkError("DXGI: Failed to get adapter for present device");
     
@@ -214,7 +219,9 @@ namespace dxvk {
           BOOL*         pFullscreen,
           IDXGIOutput** ppTarget) {
     HRESULT hr = S_OK;
-    
+
+    if (!m_is_d3d12 && !m_descFs.Windowed && wsi::isOccluded(m_window))
+      SetFullscreenState(FALSE, nullptr);
     if (pFullscreen != nullptr)
       *pFullscreen = !m_descFs.Windowed;
     
@@ -286,6 +293,16 @@ namespace dxvk {
     
     if (SyncInterval > 4)
       return DXGI_ERROR_INVALID_CALL;
+
+    if (!m_is_d3d12 && wsi::isMinimized(m_window))
+      return DXGI_STATUS_OCCLUDED;
+
+    if (!m_descFs.Windowed && wsi::isOccluded(m_window))
+    {
+      if (!(PresentFlags & DXGI_PRESENT_TEST))
+        SetFullscreenState(FALSE, nullptr);
+      return DXGI_STATUS_OCCLUDED;
+    }
 
     std::lock_guard<dxvk::recursive_mutex> lockWin(m_lockWindow);
     std::lock_guard<dxvk::mutex> lockBuf(m_lockBuffer);

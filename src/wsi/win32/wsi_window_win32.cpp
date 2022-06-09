@@ -253,6 +253,16 @@ namespace dxvk::wsi {
   }
 
 
+  bool isMinimized(HWND hWindow) {
+    return (::GetWindowLongW(hWindow, GWL_STYLE) & WS_MINIMIZE) != 0;
+  }
+
+
+  bool isOccluded(HWND hWindow) {
+    return ::GetForegroundWindow() != hWindow;
+  }
+
+
   void updateFullscreenWindow(
           HMONITOR hMonitor,
           HWND     hWindow,
