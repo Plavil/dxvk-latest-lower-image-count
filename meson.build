@@ -1,5 +1,6 @@
-project('dxvk', ['c', 'cpp'], version : 'v2.1', meson_version : '>= 0.49', default_options : [ 'cpp_std=c++17', 'warning_level=2' ])
+project('dxvk', ['c', 'cpp'], version : '2.1', meson_version : '>= 0.49', default_options : [ 'cpp_std=c++17', 'warning_level=2' ])
 
+pkg = import('pkgconfig')
 cpu_family = target_machine.cpu_family()
 platform   = target_machine.system()
 
@@ -115,14 +116,20 @@ else
   dxvk_wsi = get_option('dxvk_native_wsi')
   
   if dxvk_wsi == 'sdl2'
-    lib_sdl2 = cpp.find_library('SDL2')
+    sdl2_dep = dependency('sdl2')
     compiler_args += ['-DDXVK_WSI_SDL2']
   elif dxvk_wsi == 'glfw'
-    lib_glfw = cpp.find_library('glfw')
+    glfw_dep = dependency('glfw3')
     compiler_args += ['-DDXVK_WSI_GLFW']
   endif
-  
-  dxvk_name_prefix = 'libdxvk_'
+
+  if dxvk_wsi == 'sdl2'
+    dxvk_name_prefix = 'dxvk_'
+    dxvk_pkg_prefix = 'dxvk-'
+  else
+    dxvk_name_prefix = 'dxvk_@0@_'.format(dxvk_wsi)
+    dxvk_pkg_prefix = 'dxvk-@0@-'.format(dxvk_wsi)
+  endif
 
   link_args += [
     '-static-libgcc',
@@ -138,7 +145,6 @@ add_project_link_arguments(cpp.get_supported_link_arguments(link_args), language
 add_project_link_arguments(cc.get_supported_link_arguments(link_args), language: 'c')
 
 exe_ext = ''
-dll_ext = ''
 def_spec_ext = '.def'
 
 glsl_compiler = find_program('glslangValidator')
@@ -162,5 +168,9 @@ dxvk_version = vcs_tag(
   input:  'version.h.in',
   output: 'version.h',
 )
+
+if platform != 'windows'
+  subdir('include/native')
+endif
 
 subdir('src')

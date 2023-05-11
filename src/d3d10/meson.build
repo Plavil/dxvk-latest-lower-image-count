@@ -12,8 +12,7 @@ if platform != 'windows'
   d3d10_core_link_depends += files('d3d10core.sym')
 endif
 
-d3d10_core_dll = shared_library('d3d10core'+dll_ext, d3d10_core_src, d3d10_core_res,
-  name_prefix         : dxvk_name_prefix,
+d3d10_core_dll = shared_library(dxvk_name_prefix+'d3d10core', d3d10_core_src, d3d10_core_res,
   dependencies        : [ d3d11_dep ],
   include_directories : dxvk_include_path,
   install             : true,
@@ -25,3 +24,10 @@ d3d10_core_dll = shared_library('d3d10core'+dll_ext, d3d10_core_src, d3d10_core_
 d3d10_core_dep = declare_dependency(
   link_with           : [ d3d10_core_dll ],
 )
+
+if platform != 'windows'
+  pkg.generate(d3d10_core_dll,
+    filebase: dxvk_pkg_prefix + 'd3d10core',
+    subdirs:  'dxvk',
+  )
+endif

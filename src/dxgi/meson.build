@@ -21,8 +21,7 @@ if platform != 'windows'
   dxgi_link_depends += files('dxgi.sym')
 endif
 
-dxgi_dll = shared_library('dxgi'+dll_ext, dxgi_src, dxgi_res,
-  name_prefix         : dxvk_name_prefix,
+dxgi_dll = shared_library(dxvk_name_prefix+'dxgi', dxgi_src, dxgi_res,
   dependencies        : [ dxvk_dep ],
   include_directories : dxvk_include_path,
   install             : true,
@@ -35,3 +34,10 @@ dxgi_dep = declare_dependency(
   link_with           : [ dxgi_dll ],
   include_directories : [ dxvk_include_path ],
 )
+
+if platform != 'windows'
+  pkg.generate(dxgi_dll,
+    filebase: dxvk_pkg_prefix + 'dxgi',
+    subdirs:  'dxvk',
+  )
+endif
