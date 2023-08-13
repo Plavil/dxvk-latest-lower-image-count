@@ -31,7 +31,8 @@ namespace dxvk {
             IDXGIVkSwapChain*           pPresenter,
             HWND                        hWnd,
       const DXGI_SWAP_CHAIN_DESC1*      pDesc,
-      const DXGI_SWAP_CHAIN_FULLSCREEN_DESC*  pFullscreenDesc);
+      const DXGI_SWAP_CHAIN_FULLSCREEN_DESC*  pFullscreenDesc,
+            IUnknown*                   pDevice);
     
     ~DxgiSwapChain();
     
@@ -192,7 +193,9 @@ namespace dxvk {
     bool                            m_monitorHasOutput = true;
     bool                            m_frameStatisticsDisjoint = true;
     wsi::DxvkWindowState            m_windowState;
-    
+
+    bool                            m_is_d3d12;
+
     HRESULT EnterFullscreenMode(
             IDXGIOutput1            *pTarget);
     

@@ -134,6 +134,17 @@ namespace dxvk::wsi {
   }
 
 
+  bool isMinimized(HWND hWindow) {
+    SDL_Window* window = fromHwnd(hWindow);
+    return (SDL_GetWindowFlags(window) & SDL_WINDOW_MINIMIZED) != 0;
+  }
+
+
+  bool isOccluded(HWND hWindow) {
+    return false;
+  }
+
+
   void updateFullscreenWindow(
           HMONITOR hMonitor,
           HWND     hWindow,
