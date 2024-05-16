@@ -2,6 +2,12 @@
 
 namespace dxvk {
 
+  GpuFlushTracker::GpuFlushTracker(
+          bool ensureReproducibleHeuristic)
+  : m_ensureReproducibleHeuristic(ensureReproducibleHeuristic) {
+
+  }
+
   bool GpuFlushTracker::considerFlush(
           GpuFlushType          flushType,
           uint64_t              chunkId,
@@ -47,6 +53,9 @@ namespace dxvk {
       } [[fallthrough]];
 
       case GpuFlushType::ImplicitSynchronization: {
+        if (m_ensureReproducibleHeuristic)
+          return true;
+
         // If the GPU is about to go idle, flush aggressively. This may be
         // required if the application is spinning on a query or resource.
         uint32_t pendingSubmissions = uint32_t(m_lastFlushSubmissionId - lastCompleteSubmissionId);
