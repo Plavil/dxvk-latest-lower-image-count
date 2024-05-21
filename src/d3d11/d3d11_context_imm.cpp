@@ -19,6 +19,7 @@ namespace dxvk {
     m_csThread(Device, Device->createContext(DxvkContextType::Primary)),
     m_maxImplicitDiscardSize(pParent->GetOptions()->maxImplicitDiscardSize),
     m_submissionFence(new sync::CallbackFence()),
+    m_flushTracker(pParent->GetOptions()->reproducibleCommandStream),
     m_multithread(this, false, pParent->GetOptions()->enableContextLock),
     m_videoContext(this, Device) {
     EmitCs([
@@ -929,6 +930,9 @@ namespace dxvk {
 
   void D3D11ImmediateContext::ConsiderFlush(
           GpuFlushType                FlushType) {
+    if (m_parent->GetOptions()->reproducibleCommandStream)
+      m_csThread.synchronize(DxvkCsThread::SynchronizeAll);
+
     uint64_t chunkId = GetCurrentSequenceNumber();
     uint64_t submissionId = m_submissionFence->value();
 

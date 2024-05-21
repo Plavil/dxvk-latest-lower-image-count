@@ -56,6 +56,7 @@ namespace dxvk {
     , m_csThread        ( dxvkDevice, dxvkDevice->createContext(DxvkContextType::Primary) )
     , m_csChunk         ( AllocCsChunk() )
     , m_submissionFence (new sync::Fence())
+    , m_flushTracker    (m_d3d9Options.reproducibleCommandStream)
     , m_d3d9Interop     ( this )
     , m_d3d9On12        ( this )
     , m_d3d8Bridge      ( this ) {
@@ -5315,6 +5316,9 @@ namespace dxvk {
 
 
   void D3D9DeviceEx::ConsiderFlush(GpuFlushType FlushType) {
+    if (m_d3d9Options.reproducibleCommandStream)
+      m_csThread.synchronize(DxvkCsThread::SynchronizeAll);
+
     uint64_t chunkId = GetCurrentSequenceNumber();
     uint64_t submissionId = m_submissionFence->value();
 
