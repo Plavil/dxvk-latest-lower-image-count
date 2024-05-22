@@ -607,7 +607,7 @@ namespace dxvk {
           uint32_t                  minImageCount,
           uint32_t                  maxImageCount,
           uint32_t                  desired) {
-    uint32_t count = minImageCount + 1;
+    uint32_t count = minImageCount;
     
     if (count < desired)
       count = desired;
@@ -682,8 +682,6 @@ namespace dxvk {
       // If the present operation has succeeded, actually wait for it to complete.
       // Don't bother with it on MAILBOX / IMMEDIATE modes since doing so would
       // restrict us to the display refresh rate on some platforms (XWayland).
-      if (frame.result >= 0 && (frame.mode == VK_PRESENT_MODE_FIFO_KHR || frame.mode == VK_PRESENT_MODE_FIFO_RELAXED_KHR)) {
-        VkResult vr = m_vkd->vkWaitForPresentKHR(m_vkd->device(),
           m_swapchain, frame.frameId, std::numeric_limits<uint64_t>::max());
 
         if (vr < 0 && vr != VK_ERROR_OUT_OF_DATE_KHR && vr != VK_ERROR_SURFACE_LOST_KHR)
