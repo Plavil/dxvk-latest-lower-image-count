@@ -682,8 +682,10 @@ namespace dxvk {
       // If the present operation has succeeded, actually wait for it to complete.
       // Don't bother with it on MAILBOX / IMMEDIATE modes since doing so would
       // restrict us to the display refresh rate on some platforms (XWayland).
+       if (frame.result >= 0 ) {
+        VkResult vr = m_vkd->vkWaitForPresentKHR(m_vkd->device(),
           m_swapchain, frame.frameId, std::numeric_limits<uint64_t>::max());
-
+         
         if (vr < 0 && vr != VK_ERROR_OUT_OF_DATE_KHR && vr != VK_ERROR_SURFACE_LOST_KHR)
           Logger::err(str::format("Presenter: vkWaitForPresentKHR failed: ", vr));
       }
